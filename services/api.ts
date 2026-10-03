@@ -1,55 +1,61 @@
-export const API_BASE_URL = 'https://dummyjson.com';
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export class ApiError extends Error {
   status: number;
-  statusText: string;
-
-  constructor(message: string, status: number, statusText: string) {
+  constructor(message: string, status: number) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
-    this.statusText = statusText;
+
+
   }
 }
 
-// Fungsi pembantu Generic (apiClient)
+
 export async function apiClient<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
-  const defaultHeaders: HeadersInit = {
+  const token =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('token')
+      : null;
+
+  const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
-  // Eksekusi Request HTTP dengan Penanganan Caching Next.js
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
+
+  let response: Response;
+
   try {
-    const response = await fetch(url, {
+    response = await fetch(url, {
       ...options,
       headers: {
         ...defaultHeaders,
         ...options.headers,
       },
-      next: { revalidate: 60 },
     });
+    
+  } catch {
+    throw new Error('Gagal terhubung ke server backend');
+  }
 
-    if (!response.ok) {
-      throw new ApiError(
-        `HTTP Error: Gagal memuat data dari ${endpoint} (${response.status} ${response.statusText})`,
-        response.status,
-        response.statusText
-      );
-    }
+  const data = await response.json().catch(() => null);
 
-    const data: T = await response.json();
-    return data;
-} catch (error) {
-    if (error instanceof ApiError) {
-        throw error;
-    }
-    throw new Error(
-        `Network Error: Tidak dapat terhubung ke server API (${(error as Error).message})`
-    );
-}
+  if (!response.ok) {
+    const errorMessage =
+      data?.message ||
+      `Terjadi kesalahan (Status: ${response.status})`;
+
+    throw new ApiError(errorMessage, response.status);
+  }
+
+  return data as T;
 }

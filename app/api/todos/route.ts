@@ -67,21 +67,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newTodo = await todoService.createTodo({
-      todo: body.todo,
-      completed: Boolean(body.completed),
-      userId: Number(body.userId) || 1,
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Berhasil membuat todo baru melalui DummyJSON API (Simulasi)!',
-        data: newTodo,
-        timestamp: new Date().toISOString(),
-      },
-      { status: 201 }
-    );
   } catch (error) {
     return NextResponse.json(
       {
