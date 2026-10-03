@@ -1,106 +1,65 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { todoService } from '@/services/todoService';
 import { authService } from '@/services/authService';
+import TaskNotFound from './components/TaskNotFound';
+import TaskDetailCard from '@/app/task/[id]/components/TaskDetailCard';
+import { Todo } from '@/types/todo';
 
-export default function LoginForm() {
+export default function TodoDetailPage() {
+  const params = useParams();
   const router = useRouter();
+  const id = params?.id as string;
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [todo, setTodo] = useState<Todo | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
-
-    if (!username.trim() || !password) {
-      setError('Username dan password wajib diisi!');
+  useEffect(() => {
+    const token = authService.getToken();
+    if (!token) {
+      router.replace('/login');
       return;
     }
 
-    try {
-      setLoading(true);
-      setError('');
+    if (!id) return;
 
-      await authService.login({
-        username: username.trim(),
-        password,
+    todoService
+      .getTodoById(id)
+      .then((data) => {
+        if (data) {
+          setTodo({
+            id: data.id,
+            title: data.todo,
+            completed: Boolean(data.completed),
+            createdAt: new Date().toISOString().split('T')[0],
+          });
+        } else {
+          setTodo(null);
+        }
+      })
+      .catch(() => {
+        setTodo(null);
+      })
+      .finally(() => {
+        setLoading(false);
       });
+  }, [id, router]);
 
-      router.push('/');
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Gagal login, periksa username dan password Anda!';
-
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md">
-          {error}
+  if (loading) {
+    return (
+      <main className="min-h-screen p-6 md:p-10 bg-white text-dark-70">
+        <div className="max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100 text-center">
+          <p className="text-gray-400 text-sm">Memuat detail tugas...</p>
         </div>
-      )}
+      </main>
+    );
+  }
 
-      <div>
-        <label
-          htmlFor="username"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Username:
-        </label>
+  if (!todo) {
+    return <TaskNotFound id={id} />;
+  }
 
-        <input
-          type="text"
-          id="username"
-          name="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Masukkan username"
-          required
-          className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800"
-        />
-      </div>
-
-      <div>
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Password:
-        </label>
-
-        <input
-          type="password"
-          id="password"
-          name="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Masukkan password"
-          required
-          className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800"
-        />
-      </div>
-
-      <div className="pt-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium rounded-md transition-colors cursor-pointer disabled:cursor-not-allowed"
-        >
-          {loading ? 'Sedang Masuk...' : 'Login'}
-        </button>
-      </div>
-    </form>
-  );
+  return <TaskDetailCard todo={todo} />;
 }

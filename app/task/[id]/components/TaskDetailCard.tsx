@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import { Badge } from '@/app/components/ui/budget';
 import { Todo } from '@/types/todo';
 
 type TaskDetailCardProps = {
@@ -18,7 +17,7 @@ export default function TaskDetailCard({ todo }: TaskDetailCardProps) {
 
           <Link
             href="/"
-            className="text-xs font-semibold bg-gray-200 hover:bg-gray-30 text-dark-70 border border-gray-200 px-3.5 py-2 rounded-lg transition shadow-xs"
+            className="text-xs font-semibold bg-gray-200 hover:bg-gray-300 text-dark-70 border border-gray-200 px-3.5 py-2 rounded-lg transition shadow-xs"
           >
             ← Kembali ke Daftar
           </Link>
@@ -26,19 +25,19 @@ export default function TaskDetailCard({ todo }: TaskDetailCardProps) {
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-muted uppercase tracking-wider">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               ID Tugas
             </label>
 
             <div className="mt-1">
-              <Badge variant="purple" size="default">
+              <span className="inline-block bg-purple-100 text-purple-700 text-xs font-medium px-2.5 py-1 rounded-md">
                 #{todo.id}
-              </Badge>
+              </span>
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-muted uppercase tracking-wider">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Judul Tugas
             </label>
 
@@ -48,26 +47,29 @@ export default function TaskDetailCard({ todo }: TaskDetailCardProps) {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-muted uppercase tracking-wider">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Status
             </label>
 
             <div className="mt-1">
-              <Badge
-                variant={todo.completed ? 'green' : 'yellow'}
-                size="sm"
+              <span
+                className={`inline-block text-xs font-medium px-2.5 py-1 rounded-md ${
+                  todo.completed
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}
               >
                 {todo.completed ? '✓ Selesai' : '⌛ Belum Selesai'}
-              </Badge>
+              </span>
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-muted uppercase tracking-wider">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Tanggal Dibuat
             </label>
 
-            <p className="text-muted text-sm mt-1">
+            <p className="text-gray-500 text-sm mt-1">
               {todo.createdAt}
             </p>
           </div>
