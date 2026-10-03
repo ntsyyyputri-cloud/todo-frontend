@@ -6,17 +6,13 @@ import { authService } from '@/services/authService';
 
 export default function LoginForm() {
   const router = useRouter();
-
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!username.trim() || !password) {
       setError('Username dan password wajib diisi!');
       return;
@@ -25,19 +21,13 @@ export default function LoginForm() {
     try {
       setLoading(true);
       setError('');
-
-      await authService.login({
-        username: username.trim(),
-        password,
-      });
-
+      await authService.login({ username: username.trim(), password });
       router.push('/');
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
           : 'Gagal login, periksa username dan password Anda!';
-
       setError(message);
     } finally {
       setLoading(false);
@@ -53,13 +43,9 @@ export default function LoginForm() {
       )}
 
       <div>
-        <label
-          htmlFor="username"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
           Username:
         </label>
-
         <input
           type="text"
           id="username"
@@ -73,13 +59,9 @@ export default function LoginForm() {
       </div>
 
       <div>
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
           Password:
         </label>
-
         <input
           type="password"
           id="password"
